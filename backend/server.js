@@ -6,20 +6,17 @@ import { HfInference } from "@huggingface/inference";
 
 dotenv.config();
 const app = express();
+app.use(cors()); // Allow requests from any origin
 const upload = multer({ storage: multer.memoryStorage() });
-const hf = new HfInference(process.env.HF_API_KEY);
 
-app.use(cors());
+const hf = new HfInference(process.env.HF_API_KEY);
 
 app.post("/predict", upload.single("image"), async (req, res) => {
   try {
-    const imageBuffer = req.file.buffer;
-
     const result = await hf.imageClassification({
       model: "Abuzaid01/plant-disease-classifier",
-      data: imageBuffer,
+      data: req.file.buffer,
     });
-
     res.json(result);
   } catch (err) {
     console.error(err);
@@ -27,6 +24,5 @@ app.post("/predict", upload.single("image"), async (req, res) => {
   }
 });
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on http://localhost:${process.env.PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
